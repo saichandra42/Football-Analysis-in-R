@@ -1,47 +1,86 @@
 library(shiny)
-library(shinythemes)
+library(reactable)
+library(shinyfilter)
 
 # Read files
-games <- read.csv('./data/games.csv')
+games <- read.csv('./data/games.csv',stringsAsFactors = FALSE, header = TRUE, encoding = "UTF-8")
 leagues <- read.csv('./data/leagues.csv')
 teams <- read.csv('./data/teams.csv')
 players <- read.csv('./data/players.csv')
 
-#Define server function
-server <- function(input,output,session) {
-  output$gamesTable <- renderTable(games)
-  observe({
-    updateSelectInput(session,"leagueName",choices = leagues$name)
-    updateSelectInput(session,"matchName",choices = games$gameID)
-    updateSelectInput(session,"teamName",choices = teams$name)
-    updateSelectInput(session,"playerName",choices = players$name)
-  })
-}
-
-#UI
-ui = fluidPage(
+# UI of the Application
+ui <- fluidPage(
   theme = "custom.css",
-  h1("EAS 509 - Visualization and Analysis of European football"),
-  fluidRow(
-    column(width = 3,
-           selectInput("leagueName","Select League Name","Premier League","Names")
+  titlePanel("EAS 509 - Visualization and Analysis of European football"),
+  sidebarLayout(
+    sidebarPanel(
+      width = 2,
+      selectizeInput(inputId = "game_id", label = "Game ID",
+                     multiple = TRUE, options = list(onChange = event("ev_click")),
+                     choices = sort(unique(games$gameID))),
+      
+      selectizeInput(inputId = "league_id",label = "League ID",
+                     multiple = TRUE, options = list(onChange = event("ev_click")),
+                     choices = sort(unique(games$leagueID))),
+      
+      selectizeInput(inputId = "season",label = "Season",
+                     multiple = TRUE, options = list(onChange = event("ev_click")),
+                     choices = sort(unique(games$season))),
+      
+      selectizeInput(inputId = "homeTeamID",label = "Home Team ID",
+                     multiple = TRUE, options = list(onChange = event("ev_click")),
+                     choices = sort(unique(games$homeTeamID))),
+      
+      selectizeInput(inputId = "awayTeamID",label = "Away Team ID",
+                     multiple = TRUE, options = list(onChange = event("ev_click")),
+                     choices = sort(unique(games$awayTeamID)))
     ),
-    column(3,
-           selectInput("matchName","Select Match Name","Names")
-    ),
-    column(3,
-           selectInput("teamName","Select Team Name","Names")
-    ),
-    column(3,
-           selectInput("playerName","Select Player Name","Names")
-    )
-  ),
-  fluidRow(
-    column(width=12,
-           tableOutput('gamesTable')
+    mainPanel(
+      width = 10,
+      reactableOutput(outputId = "tbl_games")
     )
   )
 )
 
-# Creating shiny object
-shinyApp(ui=ui,server=server)
+# Logic of the application
+server <- function(input, output, session) {
+  
+  r <- reactiveValues(games_table = games)
+  
+  define_filters(input,
+                 "tbl_games",
+                 c(game_id = "gameID", 
+                   league_id= "leagueID",
+                   season="season",
+                   date="date",
+                   homeTeamID = "homeTeamID",
+                   awayTeamID = "awayTeamID"
+                   #homeGoals = "Home Goals",
+                   #awayGoals = "Away Goals",
+                   #homeProbability = "Home Probability",
+                   #drawProbability = "Draw Probability"
+                   ), 
+                 games)
+  
+  observeEvent(input$ev_click, {
+    r$games_table <- update_filters(input, session, "tbl_games")
+  })
+  
+  output$tbl_games <- renderReactable({
+    reactable(data = r$games_table,
+              filterable = TRUE,
+              rownames = FALSE,
+              selection = "multiple",
+              showPageSizeOptions = TRUE,
+              paginationType = "jump",
+              showSortable = TRUE,
+              highlight = TRUE,
+              resizable = TRUE,
+              rowStyle = list(cursor = "pointer"),
+              onClick = "select"
+    )
+  })
+  
+}
+
+shinyApp(ui = ui, server = server)
