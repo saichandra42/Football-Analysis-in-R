@@ -3,7 +3,7 @@ library(reactable)
 library(shinyfilter)
 
 # Read files
-games <- read.csv('./data/all_merged.csv',stringsAsFactors = FALSE, header = TRUE, encoding = "UTF-8")
+games <- read.csv('./data/all_merged.csv', header = TRUE, encoding = "UTF-8")
 
 
 # UI of the Application
@@ -13,25 +13,18 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       width = 2,
-      selectizeInput(inputId = "game_id", label = "Game ID",
+      selectizeInput(inputId = "league_name", label = "League Name",
                      multiple = TRUE, options = list(onChange = event("ev_click")),
-                     choices = sort(unique(games$gameID))),
-      
-      selectizeInput(inputId = "league_id",label = "League ID",
+                     choices = sort(unique(games$leagueName))),
+      selectizeInput(inputId = "hometeam_name", label = "Home Team Name",
                      multiple = TRUE, options = list(onChange = event("ev_click")),
-                     choices = sort(unique(games$leagueID))),
-      
-      selectizeInput(inputId = "season",label = "Season",
+                     choices = sort(unique(games$hometeam_name))),
+      selectizeInput(inputId = "awayteam_name", label = "Away Team Name",
                      multiple = TRUE, options = list(onChange = event("ev_click")),
-                     choices = sort(unique(games$season))),
-      
-      selectizeInput(inputId = "homeTeamID",label = "Home Team ID",
+                     choices = sort(unique(games$awayteam_name))),
+      selectizeInput(inputId = "player_name", label = "Player Name",
                      multiple = TRUE, options = list(onChange = event("ev_click")),
-                     choices = sort(unique(games$homeTeamID))),
-      
-      selectizeInput(inputId = "awayTeamID",label = "Away Team ID",
-                     multiple = TRUE, options = list(onChange = event("ev_click")),
-                     choices = sort(unique(games$awayTeamID)))
+                     choices = sort(unique(games$player_name)))
     ),
     mainPanel(
       width = 10,
@@ -47,17 +40,12 @@ server <- function(input, output, session) {
   
   define_filters(input,
                  "tbl_games",
-                 c(game_id = "gameID", 
-                   league_id= "leagueID",
-                   season="season",
-                   date="date",
-                   homeTeamID = "homeTeamID",
-                   awayTeamID = "awayTeamID",
-                   homeGoals = "Home Goals",
-                   awayGoals = "Away Goals",
-                   homeProbability = "Home Probability",
-                   drawProbability = "Draw Probability")
-                 ,games)
+                 c(league_name = "leagueName",
+                   hometeam_name = "hometeam_name",
+                   awayteam_name = "awayteam_name",
+                   player_name = "player_name"
+                 ), 
+                 games)
   
   observeEvent(input$ev_click, {
     r$games_table <- update_filters(input, session, "tbl_games")
@@ -67,7 +55,6 @@ server <- function(input, output, session) {
     reactable(data = r$games_table,
               filterable = TRUE,
               rownames = FALSE,
-              selection = "multiple",
               showPageSizeOptions = TRUE,
               paginationType = "jump",
               showSortable = TRUE,
