@@ -3,10 +3,8 @@ library(reactable)
 library(shinyfilter)
 
 # Read files
-games <- read.csv('./data/games.csv',stringsAsFactors = FALSE, header = TRUE, encoding = "UTF-8")
-leagues <- read.csv('./data/leagues.csv')
-teams <- read.csv('./data/teams.csv')
-players <- read.csv('./data/players.csv')
+games <- read.csv('./data/all_merged.csv',stringsAsFactors = FALSE, header = TRUE, encoding = "UTF-8")
+
 
 # UI of the Application
 ui <- fluidPage(
@@ -54,13 +52,12 @@ server <- function(input, output, session) {
                    season="season",
                    date="date",
                    homeTeamID = "homeTeamID",
-                   awayTeamID = "awayTeamID"
-                   #homeGoals = "Home Goals",
-                   #awayGoals = "Away Goals",
-                   #homeProbability = "Home Probability",
-                   #drawProbability = "Draw Probability"
-                   ), 
-                 games)
+                   awayTeamID = "awayTeamID",
+                   homeGoals = "Home Goals",
+                   awayGoals = "Away Goals",
+                   homeProbability = "Home Probability",
+                   drawProbability = "Draw Probability")
+                 ,games)
   
   observeEvent(input$ev_click, {
     r$games_table <- update_filters(input, session, "tbl_games")
