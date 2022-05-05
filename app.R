@@ -30,8 +30,41 @@ ui <- fluidPage(
       width = 10,
       reactableOutput(outputId = "tbl_games")
     )
+  ),
+  fluidRow(
+    column(
+      6,tags$img(src="1.jpeg",width="600px",height="400px")
+    ),
+    column(
+      6,tags$img(src="2.jpeg",width="600px",height="400px")
+    )
+  ),
+  fluidRow(
+    column(
+      6,tags$img(src="3.jpeg",width="600px",height="400px")
+    ),
+    column(
+      6,tags$img(src="4.jpeg",width="600px",height="400px")
+    )
+  ),
+  fluidRow(
+    column(
+      6,tags$img(src="5.jpeg",width="600px",height="400px")
+    ),
+    column(
+      6,tags$img(src="6.jpeg",width="600px",height="400px")
+    )
+  ),
+  fluidRow(
+    column(
+      6,tags$img(src="7.jpeg",width="600px",height="400px")
+    ),
+    column(
+      6,tags$img(src="8.jpeg",width="600px",height="400px")
+    )
   )
 )
+
 
 # Logic of the application
 server <- function(input, output, session) {
@@ -51,6 +84,7 @@ server <- function(input, output, session) {
     r$games_table <- update_filters(input, session, "tbl_games")
   })
   
+  
   output$tbl_games <- renderReactable({
     reactable(data = r$games_table,
               filterable = TRUE,
@@ -64,7 +98,6 @@ server <- function(input, output, session) {
               onClick = "select"
     )
   })
-  
 }
 
 shinyApp(ui = ui, server = server)
